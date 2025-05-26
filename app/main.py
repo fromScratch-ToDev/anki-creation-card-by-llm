@@ -41,15 +41,18 @@ def main():
 
         ui.show_word_progress(word, word_index, total_words)
 
-        # Create progress bar for current word (7 steps now: initialization + anki + 5 existing)
+        # Create progress bar for current word (8 steps now: ollama + initialization + anki + 5 existing)
         progress = tqdm(
-            total=7, desc=f"Creating card {word_index}/{total_words}", unit="step")
+            total=8, desc=f"Creating card {word_index}/{total_words}", unit="step")
 
         try:
-            # Step 1: Initialization
+            # Step 1: Initialize Ollama client (includes server check/start)
+            progress.set_description("Initializing Ollama client")
+            llm_client = OllamaClient(model=model, progress=progress)
+            progress.update(1)
+
+            # Step 2: Initialization
             progress.set_description("Initializing components")
-            # Initialize components here for each word to ensure fresh state
-            llm_client = OllamaClient(model=model)
             # Pass progress to handle Anki startup
             card_creator = CardCreator(progress)
             progress.update(1)

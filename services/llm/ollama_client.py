@@ -4,13 +4,17 @@ import requests
 
 from config.settings import OLLAMA_API_URL, OLLAMA_MODEL
 
+from .ollama_server import OllamaServer
+
 
 class OllamaClient:
     """Handles communication with Ollama LLM."""
 
-    def __init__(self, model: str = OLLAMA_MODEL):
+    def __init__(self, model: str = OLLAMA_MODEL, progress=None):
         self.model = model
         self.api_url = OLLAMA_API_URL
+        # S'assurer que le serveur Ollama est en cours d'exécution
+        OllamaServer.ensure_server_running(progress)
 
     def generate_word_info(self, word: str, language: str) -> str:
         """Generate definition, synonyms and example for a word."""
@@ -32,10 +36,23 @@ class OllamaClient:
 
     def _ask_ollama(self, prompt: str) -> str:
         """Send request to Ollama API."""
-        response = requests.post(self.api_url, json={
-            "model": self.model,
-            "prompt": prompt,
-            "stream": False
-        })
-        response.raise_for_status()
-        return response.json()["response"]
+        try:
+            response = requests.post(self.api_url, json={
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False
+            })
+            response.raise_for_status()
+            return response.json()["response"]
+        except requests.exceptions.ConnectionError:
+            # Si la connexion échoue, essayer de redémarrer le serveur
+            print("⚠️ Connection to Ollama server lost, attempting to restart...")
+            OllamaServer.ensure_server_running()
+            # Réessayer la requête
+            response = requests.post(self.api_url, json={
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False
+            })
+            response.raise_for_status()
+            return response.json()["response"]
