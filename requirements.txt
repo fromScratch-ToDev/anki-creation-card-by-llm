@@ -1,16 +1,11 @@
 # Core dependencies
-requests>=2.31.0
+requests>=2.28.1
 tqdm>=4.66.0
 
-# Text-to-Speech
+# Coqui TTS avec version compatible numpy
 TTS>=0.22.0
+numpy==1.22.0
 
-# Additional dependencies for TTS
-torch>=2.0.0
-torchaudio>=2.0.0
-numpy>=1.24.0
+# Audio processing
 librosa>=0.10.0
 soundfile>=0.12.0
-
-# Optional: for better performance on GPU
-# torch-audio  # Uncomment if you have CUDA-compatible GPU
